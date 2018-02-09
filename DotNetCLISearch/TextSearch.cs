@@ -29,18 +29,8 @@ namespace DotNetCLISearch
                 {
                     try
                     {
-                        var sw = Stopwatch.StartNew();
                         var matches = SearchFile(filePath, searchTerm, caseInsensitive);
-                        resultCount += matches.Count();
-                        foreach (var match in matches)
-                        {
-                            var filePathLessBase = filePath.Replace(searchDirectory + "\\", "");
-                            var line = match.Value.Trim();
-                            if (line.Length > 100) {
-                                line = line.Substring(0, 100) + "...";
-                            }
-                            Console.WriteLine($"\"{searchTerm}\" found. Time {sw.ElapsedMilliseconds} ms. {filePathLessBase}:{match.Key}  {line}");
-                        }
+                        resultCount += matches;
                     }
                     catch (Exception e)
                     {
@@ -57,10 +47,11 @@ namespace DotNetCLISearch
             return resultCount;
         }
 
-        private static Dictionary<int, string> SearchFile(string filePath, string searchTerm, Boolean caseInsensitive)
+        private static int SearchFile(string filePath, string searchTerm, Boolean caseInsensitive)
         {
-            var matches = new Dictionary<int, string>();
+            var matches = 0;
 
+            var sw = Stopwatch.StartNew();
             using (StreamReader stream = File.OpenText(filePath))
             {
                 string line;
@@ -71,12 +62,23 @@ namespace DotNetCLISearch
                     var comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                     if (line.IndexOf(searchTerm, comparison) > -1)
                     {
-                        matches.Add(i, line);
+                        matches++;
+                        PrintFindResult(searchTerm, sw.ElapsedMilliseconds, filePath, i, line);
                     }
                 }
             }
 
             return matches;
+        }
+
+        private static void PrintFindResult(string searchTerm, long timeInMs, string filePath, int lineNumber, string lineText)
+        {
+            var line = lineText.Trim();
+            if (line.Length > 100)
+            {
+                line = line.Substring(0, 100) + "...";
+            }
+            Console.WriteLine($"\"{searchTerm}\" found. Time {timeInMs} ms. {filePath}:{lineNumber}  {line}");
         }
 
         /**
