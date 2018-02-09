@@ -20,11 +20,6 @@ namespace DotNetCLISearch
         {
             var resultCount = 0;
 
-            if (caseInsensitive)
-            {
-                searchTerm = searchTerm.ToLower();
-            }
-
             IEnumerable<string> filePaths = Enumerable.Empty<string>();
             try
             {
